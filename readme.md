@@ -37,6 +37,21 @@ O **GUI Markdown → PDF/HTML** nasceu da necessidade de transformar documentos 
 
 ---
 
+## 📚 Bibliotecas de Terceiros
+
+Este software utiliza as seguintes bibliotecas de terceiros:
+
+- [Twemoji](https://github.com/twitter/twemoji) – MIT License  
+- [highlight.js](https://highlightjs.org/) – BSD 3-Clause  
+- [Bootstrap](https://getbootstrap.com/) – MIT License  
+- [markdown-it](https://github.com/markdown-it/markdown-it) – MIT License  
+- [DOMPurify](https://github.com/cure53/DOMPurify) – Apache 2.0  
+- [Paged.js](https://pagedjs.org/) – MIT License  
+- [github-markdown-css](https://github.com/sindresorhus/github-markdown-css) – MIT License  
+
+Os textos completos das licenças estão disponíveis em [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+
+---
 ## ✨ Funcionalidades
 - ✅ Conversão de arquivos `.md` para **PDF** ou **HTML**  
 - ✅ Interface gráfica com **drag & drop** e preview em tempo real  

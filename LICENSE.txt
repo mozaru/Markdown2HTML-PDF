@@ -1,0 +1,34 @@
+LICENÇA DE USO DE SOFTWARE – GUI Markdown → PDF/HTML
+
+Autor: Mozar Baptista da Silva
+Empresa: 11tech – Desenvolvimento de Software
+Website: www.11tech.com.br
+E-mail: mozar.silva@gmail.com
+
+1. Propriedade Intelectual
+O software “GUI Markdown → PDF/HTML” é de propriedade exclusiva de Mozar Baptista da Silva e da 11tech.  
+Todos os direitos autorais, de propriedade intelectual e conexos são reservados.  
+O código-fonte, sua organização e funcionalidades são protegidos pela legislação brasileira e tratados internacionais.
+
+2. Concessão de Licença
+É concedido ao usuário o direito não exclusivo e intransferível de **utilizar gratuitamente** o software, para fins pessoais ou profissionais, desde que respeitadas as restrições abaixo.  
+Nenhum outro direito é concedido, implícita ou explicitamente, ao usuário.
+
+3. Restrições de Uso
+O usuário NÃO poderá, sob nenhuma circunstância:
+a) Modificar, adaptar, traduzir, realizar engenharia reversa, descompilar ou criar trabalhos derivados do software;  
+b) Copiar, redistribuir, sublicenciar, vender, alugar ou disponibilizar o software, total ou parcialmente, sem autorização expressa da 11tech;  
+c) Usar o software para fins comerciais sem autorização prévia e por escrito da 11tech;  
+d) Remover ou alterar créditos, avisos de copyright ou marca da 11tech.
+
+4. Proibição de Uso Não Autorizado
+Qualquer uso, reprodução, modificação ou distribuição não autorizado constitui violação de direitos autorais e poderá resultar em medidas judiciais, incluindo indenizações e sanções penais previstas em lei.
+
+5. Limitação de Garantia
+O software é fornecido “no estado em que se encontra”, sem garantias explícitas ou implícitas, incluindo, mas não se limitando, a garantias de adequação a um propósito específico ou de ausência de erros.  
+O autor e a 11tech não se responsabilizam por danos diretos ou indiretos decorrentes do uso do software.
+
+6. Foro
+Fica eleito o foro da comarca de Petrópolis – RJ, com renúncia de qualquer outro, por mais privilegiado que seja, para dirimir quaisquer disputas decorrentes desta licença.
+
+© Mozar Baptista da Silva – 11tech. Todos os direitos reservados.
