@@ -38,6 +38,7 @@ export class NavController {
   /** Liga eventuais eventos de navegação se necessário (placeholder para futuro) */
   static bindEvents() {
     // No momento, não interceptamos cliques (links são páginas estáticas).
+
   }
 }
 

@@ -1,8 +1,9 @@
 // src/index.js
 // Boot da Home/Sobre. Injeta navbar e aplica pequenos binds de navegação.
 
-import AppController from './controllers/AppController.js';
+import AppController, { openLocalFileModal } from './controllers/AppController.js';
 import NavController from './controllers/NavController.js';
+import {applyLinkSmart} from './utils/openLinkSmart.js';
 
 function bindCtas() {
   const goSimple = document.getElementById('goSimple');
@@ -26,6 +27,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   await AppController.init();
   NavController.highlightCurrent('home');
   bindCtas();
+  applyLinkSmart();
   // Se desejar, podemos definir dinamicamente a URL do GitHub:
   // AppController.setGithubUrl('https://github.com/sua-org/seu-repo');
 });

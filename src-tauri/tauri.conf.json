@@ -8,12 +8,14 @@
     "devUrl": null
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "title": "Markdown -> HTML & PDF",
-        "width": 1200,
-        "height": 800,
+        "width": 1300,
+        "height": 900,
         "resizable": true,
+        "maximized": true,
         "fullscreen": false
       }
     ],

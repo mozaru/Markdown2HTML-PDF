@@ -6,6 +6,24 @@
 
 const DYNAMIC_STYLE_ID = 'print-dynamic-style';
 
+
+async function myFetch(path){
+  if (!window.__TAURI__)
+    return await fetch(path);
+
+  let url;
+  try {
+    url = new URL(path, window.location.href);
+  } catch {
+    url = null
+  }
+  const isExternal = url && (url.origin !== window.location.origin);
+  if (isExternal)
+    return await window.__TAURI__.http.fetch(path);
+  else
+    await fetch(path);
+}
+
 function ensureDynamicStyleEl(doc=null) {
   if (doc==null) doc = document;
   let el = doc.getElementById(DYNAMIC_STYLE_ID);
@@ -63,7 +81,7 @@ function sanitizeFilename(name = 'document') {
 
 async function loadCssFiles(paths = []) {
   const results = await Promise.all(
-    paths.map(path => fetch(path).then(r => r.text()))
+    paths.map(path => myFetch(path).then(r => r.text()))
   );
   return results.join('\n');
 }
@@ -77,7 +95,7 @@ async function inlineSvgs_old(html) {
   while ((match = imgRegex.exec(html)) !== null) {
     const svgPath = match[1];
     try {
-      const svgContent = await fetch(svgPath).then(r => r.text());
+      const svgContent = await myFetch(svgPath);
       result = result.replace(match[0], svgContent);
     } catch (err) {
       console.warn(`Falha ao injetar SVG: ${svgPath}`, err);
@@ -117,7 +135,7 @@ async function inlineSvgs(html, { baseUrl } = {}) {
       // resolve relativo x absoluto
       const absUrl = new URL(src, base).href;
 
-      const resp = await fetch(absUrl);
+      const resp = await myFetch(absUrl);
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const svgText = await resp.text();
 
@@ -205,7 +223,7 @@ static applyDocConfig(docConfig, doc=null) {
    * @param {string} filename - nome sugerido (será sanitizado)
    * @param {string} [mime='text/html;charset=utf-8']
    */
-  static download(content, filename, mime = 'text/html;charset=utf-8') {
+  /*static download(content, filename, mime = 'text/html;charset=utf-8') {
     const safe = sanitizeFilename(filename);
     const blob = content instanceof Blob ? content : new Blob([content], { type: mime });
     const url = URL.createObjectURL(blob);
@@ -218,6 +236,55 @@ static applyDocConfig(docConfig, doc=null) {
       URL.revokeObjectURL(url);
       a.remove();
     }, 0);
+  }*/
+  static async download(content, filename, mime = 'text/html;charset=utf-8') {
+    // normaliza conteúdo
+    const toBlob = async (c) =>
+      c instanceof Blob ? c : new Blob([c], { type: mime });
+
+    // 1) Tauri (dialog + fs)
+    if (window.__TAURI__?.dialog?.save && window.__TAURI__?.fs?.writeFile) {
+      try {
+        const suggested = filename || 'arquivo';
+        const path = await window.__TAURI__.dialog.save({
+          defaultPath: suggested,
+          filters: [{ name: 'Arquivo', extensions: ['html','htm','txt','pdf','*'] }]
+        });
+        if (path) {
+          const blob = await toBlob(content);
+          const buf = new Uint8Array(await blob.arrayBuffer());
+          await window.__TAURI__.fs.writeFile(path, buf);
+          return true;
+        }
+      } catch (e) { /* cai pro próximo método */ }
+    }
+
+    // 2) Web: File System Access API (Chromium)
+    if (window.showSaveFilePicker) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: filename || 'arquivo.html',
+          types: [{ description: 'Arquivo', accept: { [mime.split(';')[0]]: ['.html','.htm','.txt','.pdf'] } }]
+        });
+        const writable = await handle.createWritable();
+        const blob = await toBlob(content);
+        await writable.write(blob);
+        await writable.close();
+        return true;
+      } catch (e) { /* usuário cancelou ou não suportado */ }
+    }
+
+    // 3) Fallback: <a download> (pode não abrir "Save As" conforme config do browser)
+    const safe = filename || 'arquivo.html';
+    const blob = await toBlob(content);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = safe;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 0);
+    return true;
   }
 
   /**
@@ -243,7 +310,7 @@ static applyDocConfig(docConfig, doc=null) {
     for (let sheet of styleSheets) {
         try {
             if (sheet.href)
-                styles += await fetch(sheet.href).then(r => r.text())
+                styles += await myFetch(sheet.href);
             else
               for (let rule of sheet.cssRules)
                 styles += rule.cssText + "\n";

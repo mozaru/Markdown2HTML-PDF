@@ -21,6 +21,26 @@ function openPlaceholdersModal() {
   }
 }
 
+function openInfoModal(info){
+  const modalEl = document.getElementById('infoModal');
+  if (!modalEl) return;
+  try {
+    const content = modalEl.querySelector('.modal-body');
+    content.innerHTML = info.replaceAll("\n","<br/>");
+    const Modal = window.bootstrap && window.bootstrap.Modal;
+    if (!Modal) return;
+    const instance = Modal.getOrCreateInstance(modalEl);
+    instance.show();
+  } catch (err) {
+    Logger.warn('Falha ao abrir modal generica de informacao', { error: String(err && err.message || err) });
+  }
+}
+
+export async function openLocalFileModal(path) {
+  const content = await fetch(path)
+  openInfoModal(await content.text());
+}
+
 function bindNavbarEvents() {
   const help = document.getElementById('navHelpPlaceholders');
   if (help) {
@@ -29,6 +49,23 @@ function bindNavbarEvents() {
       openPlaceholdersModal();
     });
   }
+
+  const license = document.getElementById('navLicense');
+  if (license) {
+    license.addEventListener('click', (e) => {
+      e.preventDefault();
+      openLocalFileModal("LICENSE");
+    });
+  }
+  
+  const license2 = document.getElementById('navLicense2');
+  if (license2) {
+    license2.addEventListener('click', (e) => {
+      e.preventDefault();
+      openLocalFileModal("LICENSE");
+    });
+  }
+
   // Link do GitHub pode ser ajustado em runtime se desejar (ver setGithubUrl)
 }
 

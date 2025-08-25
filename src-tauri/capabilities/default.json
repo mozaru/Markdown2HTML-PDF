@@ -6,6 +6,24 @@
     "main"
   ],
   "permissions": [
-    "core:default"
+    "core:default",
+    "opener:allow-default-urls",
+    "opener:allow-open-url",
+    "opener:allow-open-path",
+    "opener:default",
+    {
+      "identifier": "http:default",
+      "allow": [{ "url": "https://*" }, { "url": "http://*" }]
+    },
+    "dialog:default",
+    "fs:default",
+    "fs:allow-write-file",
+    {
+      "identifier": "fs:scope",         
+      "allow": [
+        { "path": "$HOME/**/*" },       
+        { "path": "$DOWNLOAD/**/*" }    
+      ]
+    }
   ]
 }
