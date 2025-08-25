@@ -1,0 +1,45 @@
+/* ==========================================================================
+   theme.css — temas/cores opcionais (sem regras funcionais)
+   ========================================================================== */
+
+/* Tema claro padrão */
+:root {
+  --brand: #0d6efd;
+  --brand-contrast: #fff;
+  --surface: #ffffff;
+  --surface-alt: #f9fafb;
+  --text: #111;
+  --muted: #666;
+  --border: #e5e7eb;
+}
+
+/* Exemplo de classes temáticas */
+.btn-brand {
+  background: var(--brand);
+  color: var(--brand-contrast);
+  border: 1px solid var(--brand);
+  border-radius: 8px;
+  padding: .5rem .9rem;
+}
+.btn-brand:hover { filter: brightness(0.95); }
+
+.badge-muted {
+  background: var(--surface-alt);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: .2rem .5rem;
+  border-radius: .5rem;
+}
+
+/* Tema escuro opcional */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #0b0b0d;
+    --surface-alt: #141418;
+    --text: #f1f1f3;
+    --muted: #b8b8bf;
+    --border: #2a2a2f;
+  }
+  body { background: var(--surface-alt); color: var(--text); }
+  .navbar, .preview, .dropzone { background: var(--surface); border-color: var(--border); }
+}

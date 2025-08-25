@@ -1,0 +1,7 @@
+# robots.txt
+User-agent: *
+Allow: /
+
+# Evite indexar páginas internas de assets ou src (opcional)
+Disallow: /src/
+Disallow: /assets/js/vendor/

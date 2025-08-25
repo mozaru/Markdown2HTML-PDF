@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GUI Markdown → PDF/HTML — Conversão Simples</title>
+  <meta name="description" content="Conversão simples de Markdown para PDF ou HTML, com preview em tempo real e Twemoji." />
+
+  <!-- Bootstrap CSS (CDN). Para release offline/Tauri, vendorizar. -->
+  <link href="assets/js/vendor//bootstrap.min.css" rel="stylesheet" />
+
+  <!-- highlight.js CSS (para códigos no preview) -->
+  <link rel="stylesheet" href="assets/js/vendor//github.min.css">
+
+  <!-- Estilos do projeto -->
+  <link rel="stylesheet" href="./assets/css/base.css" />
+  <link rel="stylesheet" href="./assets/css/theme.css" />
+  <link rel="stylesheet" href="./assets/css/print.css" />
+
+  <link rel="icon" href="./favicon.ico" />
+</head>
+<body>
+  <!-- Navbar será injetada via JS -->
+  <div id="navbar"></div>
+
+  <main class="container-wide mt-3">
+    <div class="row g-3">
+      <div class="col-lg-5">
+        <section class="div-box p-3 mb-3">
+          <h5 class="mb-3">Entrada</h5>
+          <div id="dropzone" class="dropzone mb-3">
+            <strong>Arraste seu arquivo .md aqui</strong><br/>
+            ou clique abaixo para selecionar
+          </div>
+          <input id="fileInput" type="file" accept=".md,.markdown" class="form-control mb-3" />
+        </section>
+
+        <section class="p-3 div-box">
+          <h6 class="mb-2">Notas</h6>
+          <ul class="mb-0">
+            <li>Para PDF, o navegador abrirá o diálogo de impressão (<em>Salvar como PDF</em>).</li>
+            <li>Cabeçalho/rodapé configurável está na <a href="advanced.html">Conversão Avançada</a>.</li>
+            <li>Emojis são padronizados via Twemoji.</li>
+          </ul>
+        </section>
+      </div>
+
+      <div class="col-lg-7">
+        <div class="toolbar no-print rounded mb-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="text-muted">Preview</div>
+            <div>
+              <button id="btnSample" class="btn btn-sm btn-outline-secondary">Carregar exemplo</button>
+              <button id="btnEditMarkdown" class="btn btn-sm btn-outline-secondary">Editar</button>
+              <button id="btnVisualize" class="btn btn-sm btn-outline-secondary">Visualizar</button>
+              <button id="btnExportHtml" class="btn btn-sm btn-outline-secondary">Exportar HTML</button>
+              <button id="btnExportPdf" class="btn btn-sm btn-primary">Gerar PDF</button>
+            </div>
+          </div>
+        </div>
+        <section id="editorWrap" class="mb-3" hidden>
+          <label for="mdEditor" class="form-label mb-2">Markdown</label>
+          <textarea id="mdEditor" class="form-control" rows="16" spellcheck="false"
+                    style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;">
+          </textarea>
+          <div class="d-flex gap-2 mt-2">
+            <button id="btnApply" class="btn btn-sm btn-primary">Aplicar e visualizar (Ctrl+Enter)</button>
+            <button id="btnCancel" class="btn btn-sm btn-outline-secondary">Cancelar</button>
+          </div>
+        </section>
+        <section class="preview">
+          <article id="doc-root"></article>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal de ajuda para placeholders (aberto pela navbar) -->
+  <div class="modal fade" id="placeholdersModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Placeholders</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p>Suportados: <code>{{DATE}}</code>, <code>{{TIME}}</code>, <code>{{TITLE}}</code>, <code>{{PAGE}}</code>, <code>{{PAGES}}</code>.</p>
+          <ul>
+            <li><code>{{DATE:dd/mm/yyyy}}</code>, <code>{{TIME:HH:mm}}</code></li>
+            <li><code>{{TITLE:UPPERCASE}}</code>, <code>{{TITLE:camelCase}}</code>, <code>{{TITLE:snake_case}}</code>, etc.</li>
+            <li><code>{{PAGE:0000}}</code>, <code>{{PAGES:####}}</code>, <code>{{PAGE:9999}}</code>, <code>{{PAGE:____}}</code></li>
+          </ul>
+          <p>Para cabeçalho/rodapé configurável, use a <a href="advanced.html">Conversão Avançada</a>.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vendors (CDN). Para release offline/Tauri, vendorizar em assets/js/vendor -->
+  <script src="assets/js/vendor/bootstrap.bundle.min.js" defer></script>
+  <script src="assets/js/vendor/markdown-it.min.js" defer></script>
+  <script src="assets/js/vendor/purify.min.js" defer></script>
+  <script src="assets/js/vendor/highlight.min.js" defer></script>
+  <script src="assets/js/vendor/twemoji.min.js" defer></script>
+
+  <!-- Boot da página -->
+  <script type="module" src="../src/simple.js"></script>
+</body>
+</html>

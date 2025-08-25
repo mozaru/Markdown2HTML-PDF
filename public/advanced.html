@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GUI Markdown → PDF/HTML — Conversão Avançada</title>
+  <meta name="description" content="Conversão avançada de Markdown para PDF/HTML com cabeçalho, rodapé, placeholders, presets e paginação (Paged.js)." />
+
+  <!-- Bootstrap CSS (CDN). Para release offline/Tauri, vendorizar. -->
+  <link href="assets/js/vendor/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- highlight.js CSS (para códigos no preview) -->
+  <link rel="stylesheet" href="assets/js/vendor/github.min.css">
+
+
+  <!-- Estilos do projeto -->
+  <link rel="stylesheet" href="./assets/css/base.css" />
+  <link rel="stylesheet" href="./assets/css/theme.css" />
+  <link rel="stylesheet" href="./assets/css/print.css" />
+
+  <link rel="icon" href="./favicon.ico" />
+</head>
+<body>
+  <!-- Navbar será injetada via JS -->
+  <div id="navbar"></div>
+
+  <main class="container-wide mt-3">
+    <div class="row g-3">
+      <!-- Coluna A: Configurações e Entrada -->
+      <div class="col-lg-5">
+        <section class="div-box p-3 mb-3">
+          <h5 class="mb-3">Entrada</h5>
+          <div id="dropzone" class="dropzone mb-3">
+            <strong>Arraste seu arquivo .md aqui</strong><br/>
+            ou clique abaixo para selecionar
+          </div>
+          <input id="fileInput" type="file" accept=".md,.markdown" class="form-control mb-3" />
+
+          <div class="mb-3">
+            <label for="docTitle" class="form-label">Título do documento</label>
+            <input id="docTitle" type="text" class="form-control" placeholder="Ex.: Proposta Comercial">
+            <div class="form-text">Usado por <code>{{TITLE[:fmt]}}</code>.</div>
+          </div>
+
+       </section>
+
+        <!-- Abas de configuração -->
+        <section class="div-box p-3">
+          <ul class="nav nav-tabs" id="advancedTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="tab-contento" data-bs-toggle="tab" data-bs-target="#pane-conteudo" type="button" role="tab">Conteúdo</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="tab-hf" data-bs-toggle="tab" data-bs-target="#pane-hf" type="button" role="tab">Header & Footer</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="tab-pagina" data-bs-toggle="tab" data-bs-target="#pane-pagina" type="button" role="tab">Página</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="tab-presets" data-bs-toggle="tab" data-bs-target="#pane-presets" type="button" role="tab">Presets</button>
+            </li>
+          </ul>
+
+          <div class="tab-content mt-3">
+            <!-- Conteúdo -->
+            <div class="tab-pane fade show active" id="pane-conteudo" role="tabpanel">
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="sanitizeHtml" checked disabled>
+                <label class="form-check-label" for="sanitizeHtml">Sanitizar HTML embutido (sempre ativo)</label>
+              </div>
+
+              <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="useTwemoji" checked disabled>
+                <label class="form-check-label" for="useTwemoji">Usar Twemoji (sempre ativo)</label>
+              </div>
+
+              <div class="mb-3">
+                <label for="customCss" class="form-label">CSS extra</label>
+                <textarea id="customCss" class="form-control" rows="5" placeholder="Ex.: h1 { color: #0d6efd; }"></textarea>
+                <div class="form-text">Aplicado no documento exportado (PDF/HTML).</div>
+              </div>
+            </div>
+
+            <!-- Header & Footer -->
+            <div class="tab-pane fade" id="pane-hf" role="tabpanel">
+              <div class="mb-3">
+                <label class="form-label me-2">Modo</label>
+                <div class="d-inline-flex gap-3 align-items-center">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="hfMode" id="modeMd" value="md" checked>
+                    <label class="form-check-label" for="modeMd">Markdown</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="hfMode" id="modeHtml" value="html">
+                    <label class="form-check-label" for="modeHtml">HTML</label>
+                  </div>
+                  <button class="btn btn-sm btn-outline-secondary ms-2" id="btnHelpPlaceholders" type="button">Ajuda de placeholders</button>
+                </div>
+              </div>
+
+              <div class="row g-3">
+                <div class="col-12">
+                  <label for="headerEditor" class="form-label">Cabeçalho</label>
+                  <div class="btn-group mb-2">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                      Inserir placeholder (Header)
+                    </button>
+                    <ul class="dropdown-menu" id="insPhHeader">
+                      <li><button class="dropdown-item" data-ph="{{TITLE}}">{{TITLE}}</button></li>
+                      <li><button class="dropdown-item" data-ph="{{DATE:dd/mm/yyyy}}">{{DATE:dd/mm/yyyy}}</button></li>
+                      <li><button class="dropdown-item" data-ph="{{TIME:HH:mm}}">{{TIME:HH:mm}}</button></li>
+                      <li><button class="dropdown-item" data-ph="{{PAGE:000}}">{{PAGE:000}}</button></li>
+                      <li><button class="dropdown-item" data-ph="{{PAGES:000}}">{{PAGES:000}}</button></li>
+                    </ul>
+                  </div>
+                  <textarea id="headerEditor" class="form-control" rows="4" placeholder="# Título | Página {{PAGE:00}} de {{PAGES:00}}"></textarea>
+                </div>
+                <div class="col-12">
+                  <label for="footerEditor" class="form-label">Rodapé</label>
+                  <div class="btn-group mb-2">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                      Inserir placeholder (Footer)
+                    </button>
+                    <ul class="dropdown-menu" id="insPhFooter">
+                      <li><button class="dropdown-item" data-ph="{{TITLE:UPPERCASE}}">{{TITLE:UPPERCASE}}</button></li>
+                      <li><button class="dropdown-item" data-ph="{{DATE}}">{{DATE}}</button></li>
+                      <li><button class="dropdown-item" data-ph="{{TIME}}">{{TIME}}</button></li>
+                      <li><button class="dropdown-item" data-ph="{{PAGE:####}}">{{PAGE:####}}</button></li>
+                      <li><button class="dropdown-item" data-ph="{{PAGES:####}}">{{PAGES:####}}</button></li>
+                    </ul>
+                  </div>
+                  <textarea id="footerEditor" class="form-control" rows="4" placeholder="© 11tech — Página {{PAGE}} / {{PAGES}}"></textarea>
+                </div>
+              </div>
+
+              <div class="mt-3">
+                <small class="text-muted">
+                  Placeholders: <code>{{DATE[:fmt]}}</code>, <code>{{TIME[:fmt]}}</code>, <code>{{TITLE[:CASE]}}</code>, <code>{{PAGE[:mask]}}</code>, <code>{{PAGES[:mask]}}</code>.<br/>
+                  Máscaras: <code>0</code>=zero, <code>_</code>=underscore, <code>9</code>=espaço, <code>#</code>=opcional, outros=literais.
+                </small>
+              </div>
+            </div>
+
+            <!-- Página -->
+            <div class="tab-pane fade" id="pane-pagina" role="tabpanel">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="pageSize" class="form-label">Tamanho da página</label>
+                  <select id="pageSize" class="form-select">
+                    <option value="A4" selected>A4</option>
+                    <option value="Letter">Letter</option>
+                    <option value="Custom">Custom</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label d-block">Orientação</label>
+                  <div class="d-flex gap-3">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="orientation" id="orientPortrait" value="portrait" checked>
+                      <label class="form-check-label" for="orientPortrait">Retrato</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="orientation" id="orientLandscape" value="landscape">
+                      <label class="form-check-label" for="orientLandscape">Paisagem</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label">Margens</label>
+                  <div class="row g-2">
+                    <div class="col-6 col-md-3">
+                      <div class="input-group">
+                        <span class="input-group-text">Topo</span>
+                        <input id="marginTop" type="text" class="form-control" value="20mm">
+                      </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                      <div class="input-group">
+                        <span class="input-group-text">Direita</span>
+                        <input id="marginRight" type="text" class="form-control" value="18mm">
+                      </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                      <div class="input-group">
+                        <span class="input-group-text">Base</span>
+                        <input id="marginBottom" type="text" class="form-control" value="20mm">
+                      </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                      <div class="input-group">
+                        <span class="input-group-text">Esquerda</span>
+                        <input id="marginLeft" type="text" class="form-control" value="18mm">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-text">Use unidades CSS (ex.: <code>mm</code>, <code>cm</code>, <code>in</code>).</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Presets -->
+            <div class="tab-pane fade" id="pane-presets" role="tabpanel">
+              <div class="row g-3 align-items-end">
+                <div class="col-md-7">
+                  <label for="presetName" class="form-label">Nome do preset</label>
+                  <input id="presetName" type="text" class="form-control" placeholder="Ex.: Padrão 11tech">
+                </div>
+                <div class="col-md-5">
+                  <div class="d-flex gap-2">
+                    <button id="btnPresetSave" class="btn btn-primary" type="button">Salvar</button>
+                    <button id="btnPresetDelete" class="btn btn-outline-danger" type="button">Apagar</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row g-3 mt-1">
+                <div class="col-md-7">
+                  <label for="presetList" class="form-label">Presets</label>
+                  <select id="presetList" class="form-select"></select>
+                </div>
+                <div class="col-md-5">
+                  <div class="d-flex flex-wrap gap-2">
+                    <button id="btnPresetLoad" class="btn btn-outline-secondary" type="button">Carregar</button>
+                    <button id="btnPresetDefault" class="btn btn-outline-success" type="button">Definir padrão</button>
+                    <button id="btnPresetExport" class="btn btn-outline-secondary" type="button">Exportar JSON</button>
+                    <button id="btnPresetImport" class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#importModal">Importar JSON</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="p-3 div-box mt-3">
+          <h6 class="mb-2">Dicas</h6>
+          <ul class="mb-0">
+            <li>Headers/footers aceitam <strong>Markdown</strong> ou <strong>HTML</strong>.</li>
+            <li>Placeholders: <code>{{DATE[:fmt]}}</code>, <code>{{TIME[:fmt]}}</code>, <code>{{TITLE[:CASE]}}</code>, <code>{{PAGE[:mask]}}</code>, <code>{{PAGES[:mask]}}</code>.</li>
+            <li>Numeração com máscara é aplicada após paginação (Paged.js).</li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- Coluna B: Preview -->
+      <div class="col-lg-7">
+        <div class="toolbar no-print rounded mb-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="text-muted">Preview</div>
+            <div class="d-flex gap-2">
+              <button id="btnLoadSample" class="btn btn-sm btn-outline-secondary">Carregar exemplo</button>
+              <button id="btnEditMarkdown" class="btn btn-sm btn-outline-secondary">Editar</button>
+              <button id="btnVisualize" class="btn btn-sm btn-outline-secondary">Visualizar</button>
+              <button id="btnExportHtml" class="btn btn-sm btn-outline-secondary">Exportar HTML</button>
+              <button id="btnExportPdf" class="btn btn-sm btn-primary">Gerar PDF</button>
+            </div>
+          </div>
+        </div>
+        <section id="editorWrap" class="mb-3" hidden>
+          <label for="mdEditor" class="form-label mb-2">Markdown</label>
+          <textarea id="mdEditor" class="form-control" rows="16" spellcheck="false"
+                    style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;">
+          </textarea>
+          <div class="d-flex gap-2 mt-2">
+            <button id="btnApply" class="btn btn-sm btn-primary">Aplicar e visualizar (Ctrl+Enter)</button>
+            <button id="btnCancel" class="btn btn-sm btn-outline-secondary">Cancelar</button>
+          </div>
+        </section>
+        <section class="preview">
+          <iframe id="preview-frame"
+          sandbox="allow-scripts allow-same-origin"
+          style="width:100%;height:100%;border:0"></iframe>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal de ajuda de placeholders -->
+  <div class="modal fade" id="placeholdersModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Placeholders suportados</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <h6>Geral</h6>
+          <ul>
+            <li><code>{{DATE}}</code> ou <code>{{DATE:dd/mm/yyyy}}</code></li>
+            <li><code>{{TIME}}</code> ou <code>{{TIME:HH:mm}}</code></li>
+            <li><code>{{TITLE}}</code> com cases: <code>UPPERCASE</code>, <code>camelCase</code>, <code>PascalCase</code>, <code>snake_case</code>, etc.</li>
+          </ul>
+          <h6>Paginação</h6>
+          <ul>
+            <li><code>{{PAGE}}</code>, <code>{{PAGES}}</code></li>
+            <li>Máscaras: <code>0</code>=zero, <code>_</code>=underscore, <code>9</code>=espaço, <code>#</code>=opcional, outros=literais.</li>
+            <li>Ex.: <code>{{PAGE:000}}</code>, <code>{{PAGES:####}}</code>, <code>{{PAGE:9999}}</code>, <code>{{PAGE:____}}</code></li>
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Import JSON -->
+  <div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Importar preset (JSON)</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <textarea id="importJson" class="form-control" rows="10" placeholder='Cole o JSON do preset aqui'></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="btnImportConfirm" class="btn btn-primary" data-bs-dismiss="modal">Importar</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vendors (CDN). Para release offline/Tauri, vendorizar em assets/js/vendor -->
+  <script src="assets/js/vendor/bootstrap.bundle.min.js" defer></script>
+  <script src="assets/js/vendor/markdown-it.min.js" defer></script>
+  <script src="assets/js/vendor/purify.min.js" defer></script>
+  <script src="assets/js/vendor/highlight.min.js" defer></script>
+  <script src="assets/js/vendor/twemoji.min.js" defer></script>
+
+  <!-- Boot da página -->
+  <script type="module" src="../src/advanced.js"></script>
+</body>
+</html>

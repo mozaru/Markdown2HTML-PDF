@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GUI Markdown → PDF/HTML — Home</title>
+  <meta name="description" content="Aplicação serverless para converter Markdown em PDF/HTML, com Twemoji e placeholders em cabeçalhos/rodapés." />
+
+  <link rel="manifest" href="./manifest.webmanifest">
+
+  <!-- Bootstrap CSS (CDN). Para release offline/Tauri, vendorizar. -->
+  <link href="assets/js/vendor/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- Estilos do projeto -->
+  <link rel="stylesheet" href="./assets/css/base.css" />
+  <link rel="stylesheet" href="./assets/css/theme.css" />
+  <link rel="stylesheet" href="./assets/css/print.css" />
+
+  <!-- Favicon (opcional) -->
+  <link rel="icon" href="./favicon.ico" />
+</head>
+<body>
+  <!-- Navbar será injetada via JS (utils/dom.injectPartial) -->
+  <div id="navbar"></div>
+
+  <main class="container-narrow mt-3">
+    <section class="mb-4">
+      <h1 class="mb-2">📌 GUI Markdown → PDF/HTML</h1>
+      <p class="text-muted">
+        Aplicação <strong>serverless</strong> para converter arquivos <strong>Markdown</strong> em <strong>PDF</strong> ou <strong>HTML</strong>,
+        com suporte a <strong>emojis via Twemoji</strong> e <strong>placeholders</strong> configuráveis em cabeçalhos e rodapés.
+      </p>
+      <div class="d-flex gap-2 mt-3">
+        <a class="btn btn-primary" href="simple.html">Ir para Conversão Simples</a>
+        <a class="btn btn-outline-secondary" href="advanced.html">Ir para Conversão Avançada</a>
+      </div>
+    </section>
+
+    <section class="mb-4">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="p-3 preview">
+            <h5>Como usar</h5>
+            <ul class="mb-0">
+              <li>Abra a <a href="simple.html">Conversão Simples</a>.</li>
+              <li>Arraste um arquivo <code>.md</code> ou selecione no botão.</li>
+              <li>Escolha saída <strong>PDF</strong> (impressão) ou <strong>HTML</strong> (download).</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 preview">
+            <h5>Limitações</h5>
+            <ul class="mb-0">
+              <li>Numeração e cabeçalhos/rodapés exigem Paged.js.</li>
+              <li>Safari pode apresentar diferenças de paginação.</li>
+              <li>Conversão é local — sem upload.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 preview">
+            <h5>Privacidade</h5>
+            <p class="mb-0">Todo o processamento acontece no seu navegador. Nenhum dado é enviado a servidores.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-5">
+      <h5>Créditos & Licença</h5>
+      <p class="mb-1">
+        Autor: <strong>Mozar Baptista da Silva</strong> — 11tech.
+      </p>
+      <p class="mb-1">
+        Uso gratuito, porém <strong>modificação e redistribuição são proibidas</strong> sem autorização da 11tech.
+      </p>
+      <p class="mb-0">
+        Consulte o arquivo <a href="./LICENSE" target="_blank" rel="noopener">LICENSE</a>.
+        Repositório: <a href="#" id="homeGithub" rel="noopener" target="_blank">GitHub</a>.
+      </p>
+    </section>
+  </main>
+
+  <!-- Bootstrap JS (CDN). Para release offline/Tauri, vendorizar. -->
+  <script src="assets/js/vendor/bootstrap.bundle.min.js" defer></script>
+
+  <!-- Boot da página -->
+  <script type="module" src="../src/index.js"></script>
+</body>
+</html>

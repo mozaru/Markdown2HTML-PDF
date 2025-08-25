@@ -1,0 +1,50 @@
+
+
+/* === Print scoping: show only the document preview/paged content === */
+@media print {
+  /* Hide everything by default when in print-mode */
+  body.print-mode * {
+    visibility: hidden !important;
+  }
+
+  /* If Paged.js is active, it creates .pagedjs_pages with the paginated pages */
+  body.print-mode .pagedjs_pages,
+  body.print-mode .pagedjs_pages * {
+    visibility: visible !important;
+  }
+
+  /* Fallback: if Paged.js hasn't run yet, print the .preview area */
+  body.print-mode .preview,
+  body.print-mode .preview * {
+    visibility: visible !important;
+  }
+
+  /* Make sure the printed area starts at the top-left and spans the width */
+  body.print-mode .pagedjs_pages,
+  body.print-mode .preview {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+  }
+
+  body.print-mode .preview {
+    margin: 0px;
+    background: none; 
+  }
+  
+  body.print-mode .pagedjs_page {
+    border: none;
+    background: none;
+    box-shadow: none; /* opcional */
+    margin: var(--page-margin-top) var(--page-margin-right) var(--page-margin-bottom) var(--page-margin-left);
+  }
+
+  /* Extra safety: explicitly hide app chrome */
+  body.print-mode .navbar,
+  body.print-mode #navbar,
+  body.print-mode .toolbar,
+  body.print-mode .no-print {
+    display: none !important;
+  }
+}
