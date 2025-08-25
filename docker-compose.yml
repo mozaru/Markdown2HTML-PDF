@@ -1,0 +1,29 @@
+services:
+  md2pdf:
+    container_name: md2pdf
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: on-failure:5
+    networks:
+      - proxy-nginx
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,noexec,mode=1777
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 64M
+        reservations:
+          cpus: '0.05'
+          memory: 16M
+
+networks:
+  proxy-nginx:
+    external: true
+    

@@ -1,0 +1,43 @@
+name: Build e Deploy para Servidor
+
+on:
+  workflow_dispatch:
+  #push:
+  #  branches:
+  #    - main  # altere para sua branch de produção
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar o repositório
+        uses: actions/checkout@v3
+      
+      - name: Verificar arquivos presentes
+        run: ls -la && ls -la public
+
+      - name: Compactar arquivos
+        run: |
+          tar -czf deploy.tar.gz docker-compose.yml Dockerfile public
+
+      - name: Copiar arquivos via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: deploy.tar.gz
+          target: /server/projetos/md2pdf
+
+      - name: Rodar docker-compose no servidor
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /server/projetos/md2pdf
+            tar -xzf deploy.tar.gz
+            docker compose build
+            docker compose up -d
