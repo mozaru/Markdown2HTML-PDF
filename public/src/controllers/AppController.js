@@ -4,6 +4,7 @@
 
 import { injectPartial, qs } from '../utils/dom.js';
 import Logger from '../services/LoggerService.js';
+import MarkdownService from '../services/MarkdownService.js';
 
 function openPlaceholdersModal() {
   // Abre o modal #placeholdersModal se existir na página corrente
@@ -37,8 +38,14 @@ function openInfoModal(info){
 }
 
 export async function openLocalFileModal(path) {
-  const content = await fetch(path)
-  openInfoModal(await content.text());
+  let content = await fetch(path)
+  content = await content.text();
+  if (path.endsWith('.md'))
+  {
+    const md = new MarkdownService();
+    content = md.render(content);
+  }
+  openInfoModal(content);
 }
 
 function bindNavbarEvents() {
@@ -66,6 +73,13 @@ function bindNavbarEvents() {
     });
   }
 
+  const thirdPartyLicenses = document.getElementById('navThirdPartyLicenses');
+  if (thirdPartyLicenses) {
+    thirdPartyLicenses.addEventListener('click', (e) => {
+      e.preventDefault();
+      openLocalFileModal("THIRD_PARTY_LICENSES.md");
+    });
+  }
   // Link do GitHub pode ser ajustado em runtime se desejar (ver setGithubUrl)
 }
 

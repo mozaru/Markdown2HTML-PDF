@@ -14,7 +14,7 @@
 
   <!-- Bootstrap CSS (CDN). Para release offline/Tauri, vendorizar. -->
   <link href="assets/js/vendor/bootstrap.min.css" rel="stylesheet" />
-
+  <link rel="stylesheet" href="assets/js/vendor/github.min.css">
   <!-- Estilos do projeto -->
   <link rel="stylesheet" href="./assets/css/base.css" />
   <link rel="stylesheet" href="./assets/css/theme.css" />
@@ -87,7 +87,7 @@
           <li><a href="https://pagedjs.org">Paged.js — MIT License</a></li>
           <li><a href="https://github.com/sindresorhus/github-markdown-css">github-markdown-css — MIT License</a></li>
         </ul>
-        Consulte <a href="./THIRD_PARTY_LICENSES.md" target="_blank" rel="noopener">THIRD_PARTY_LICENSES.md</a> para detalhes.
+        Consulte <a href="#" id="navThirdPartyLicenses" >THIRD_PARTY_LICENSES.md</a> para detalhes.
       </p>
       <p class="mb-0">
         Consulte o arquivo <a href="#" id="navLicense2">LICENSE</a>.<br>
@@ -113,7 +113,10 @@
 
   <!-- Bootstrap JS (CDN). Para release offline/Tauri, vendorizar. -->
   <script src="assets/js/vendor/bootstrap.bundle.min.js" defer></script>
-
+  <script src="assets/js/vendor/markdown-it.min.js" defer></script>
+  <script src="assets/js/vendor/purify.min.js" defer></script>
+  <script src="assets/js/vendor/highlight.min.js" defer></script>
+  <script src="assets/js/vendor/twemoji.min.js" defer></script>
   <!-- Boot da página -->
   <script type="module" src="../src/index.js"></script>
 </body>
