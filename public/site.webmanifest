@@ -1,40 +1,31 @@
 {
-  "name": "GUI Markdown → PDF/HTML",
-  "short_name": "MD2PDF",
+  "id": "/",
+  "name": "MD->PDF",
+  "short_name": "MD->PDF",
   "description": "Converter Markdown em PDF/HTML localmente, com Twemoji e placeholders em cabeçalho/rodapé. 100% serverless.",
   "lang": "pt-BR",
   "dir": "ltr",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "any",
   "theme_color": "#0d6efd",
   "background_color": "#ffffff",
   "icons": [
     {
-      "src": "./assets/img/icons/icon-192.png",
+      "src": "assets/img/icons/web-app-manifest-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
-      "src": "./assets/img/icons/icon-512.png",
+      "src": "assets/img/icons/web-app-manifest-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "./assets/img/icons/maskable-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     }
   ],
-  "categories": [
-    "productivity",
-    "utilities",
-    "tools"
-  ],
+  "categories": ["productivity", "utilities", "tools"],
   "screenshots": [],
   "prefer_related_applications": false
 }

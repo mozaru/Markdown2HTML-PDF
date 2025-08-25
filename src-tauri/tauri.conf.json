@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "md2pdf-app",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "identifier": "br.com.11tech.md2pdf",
   "build": {
     "frontendDist": "../public",
@@ -11,8 +11,8 @@
     "windows": [
       {
         "title": "Markdown -> HTML & PDF",
-        "width": 800,
-        "height": 600,
+        "width": 1200,
+        "height": 800,
         "resizable": true,
         "fullscreen": false
       }

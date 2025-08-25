@@ -6,7 +6,11 @@
   <title>GUI Markdown → PDF/HTML — Home</title>
   <meta name="description" content="Aplicação serverless para converter Markdown em PDF/HTML, com Twemoji e placeholders em cabeçalhos/rodapés." />
 
-  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/png" href="assets/img/icons/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="assets/img/icons/favicon.svg" />
+  <link rel="shortcut icon" href="assets/img/icons/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/icons/apple-touch-icon.png" />
+  <link rel="manifest" href="site.webmanifest" />
 
   <!-- Bootstrap CSS (CDN). Para release offline/Tauri, vendorizar. -->
   <link href="assets/js/vendor/bootstrap.min.css" rel="stylesheet" />
@@ -15,9 +19,6 @@
   <link rel="stylesheet" href="./assets/css/base.css" />
   <link rel="stylesheet" href="./assets/css/theme.css" />
   <link rel="stylesheet" href="./assets/css/print.css" />
-
-  <!-- Favicon (opcional) -->
-  <link rel="icon" href="./favicon.ico" />
 </head>
 <body>
   <!-- Navbar será injetada via JS (utils/dom.injectPartial) -->
