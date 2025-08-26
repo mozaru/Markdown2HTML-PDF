@@ -24,7 +24,7 @@ function bindCtas() {
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
-  await AppController.init();
+  await AppController.initWithoutNavBar();
   NavController.highlightCurrent('home');
   bindCtas();
   applyLinkSmart();

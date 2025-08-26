@@ -114,7 +114,11 @@ export class AppController {
     bindNavbarEvents();
     attachGlobalShortcuts();
   }
-
+  
+  static initWithoutNavBar() {
+    bindNavbarEvents();
+    attachGlobalShortcuts();
+  }
   /** Ajusta o href do link de GitHub na navbar (se existir) */
   static setGithubUrl(url) {
     const a = document.getElementById('navGithub');
