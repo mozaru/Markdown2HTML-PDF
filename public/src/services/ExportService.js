@@ -21,7 +21,7 @@ async function myFetch(path){
   if (isExternal)
     return await window.__TAURI__.http.fetch(path);
   else
-    await fetch(path);
+    return await fetch(path);
 }
 
 function ensureDynamicStyleEl(doc=null) {
@@ -95,7 +95,9 @@ async function inlineSvgs_old(html) {
   while ((match = imgRegex.exec(html)) !== null) {
     const svgPath = match[1];
     try {
-      const svgContent = await myFetch(svgPath);
+      const resp = await myFetch(svgPath);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const svgContent = await resp.text();
       result = result.replace(match[0], svgContent);
     } catch (err) {
       console.warn(`Falha ao injetar SVG: ${svgPath}`, err);
@@ -271,7 +273,9 @@ static applyDocConfig(docConfig, doc=null) {
         await writable.write(blob);
         await writable.close();
         return true;
-      } catch (e) { /* usuário cancelou ou não suportado */ }
+      } catch (e) {
+        if (e.name === 'AbortError') return false;
+      }
     }
 
     // 3) Fallback: <a download> (pode não abrir "Save As" conforme config do browser)
@@ -310,7 +314,11 @@ static applyDocConfig(docConfig, doc=null) {
     for (let sheet of styleSheets) {
         try {
             if (sheet.href)
-                styles += await myFetch(sheet.href);
+            {
+                const resp = await myFetch(sheet.href);
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                styles += await resp.text();
+            }
             else
               for (let rule of sheet.cssRules)
                 styles += rule.cssText + "\n";
