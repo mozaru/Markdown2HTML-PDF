@@ -46,10 +46,12 @@ body { margin: 0; background: var(--bg-body); color: var(--fg-body); font-family
 
 /* Document look (área renderizada do markdown) */
 #doc-root { line-height: 1.45; font-size: 11.5pt; color: var(--fg-body); padding: 0.2in 0.3in;}
-#doc-root h1, #doc-root h2, #doc-root h3 { font-weight: 700; line-height: 1.25; }
+#doc-root h1, #doc-root h2, #doc-root h3, #doc-root h4, #doc-root h5 { font-weight: 700; line-height: 1.25; }
 #doc-root h1 { font-size: 22pt; margin: 0 0 12pt; }
 #doc-root h2 { font-size: 18pt; margin: 18pt 0 8pt; border-bottom: 1px solid #ddd; padding-bottom: 4pt; }
 #doc-root h3 { font-size: 14pt; margin: 14pt 0 6pt; }
+#doc-root h4 { font-size: 12pt; margin: 12pt 0 4pt; }
+#doc-root h5 { font-size: 10pt; margin: 10pt 0 2pt; }
 
 #doc-root p  { margin: 6pt 0 10pt; }
 #doc-root ul, #doc-root ol { margin: 6pt 0 10pt 20pt; }

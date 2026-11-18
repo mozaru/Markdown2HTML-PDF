@@ -9,7 +9,13 @@ const DYNAMIC_STYLE_ID = 'print-dynamic-style';
 
 async function myFetch(path){
   if (!window.__TAURI__)
-    return await fetch(path);
+  {
+    try{
+      return await fetch(path);
+    } catch {
+      return { ok: false };
+    }
+  }
 
   let url;
   try {
@@ -138,20 +144,21 @@ async function inlineSvgs(html, { baseUrl } = {}) {
       const absUrl = new URL(src, base).href;
 
       const resp = await myFetch(absUrl);
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const svgText = await resp.text();
+      if (resp.ok){
+        const svgText = await resp.text();
 
-      // monta data URI em Base64 (mais à prova de quebras que utf8 inline)
-      const dataUri = `data:image/svg+xml;base64,${toBase64Unicode(svgText)}`;
+        // monta data URI em Base64 (mais à prova de quebras que utf8 inline)
+        const dataUri = `data:image/svg+xml;base64,${toBase64Unicode(svgText)}`;
 
-      // troca SOMENTE o src; mantém todos os outros atributos
-      img.setAttribute('src', dataUri);
-      img.loading = 'eager';
+        // troca SOMENTE o src; mantém todos os outros atributos
+        img.setAttribute('src', dataUri);
+        img.loading = 'eager';
 
-      // opcional: se houver srcset apontando para .svg, alinhar também (sem remover outros attrs)
-      const srcset = img.getAttribute('srcset');
-      if (srcset && /\.svg(\s|$)/i.test(srcset)) {
-        img.setAttribute('srcset', dataUri);
+        // opcional: se houver srcset apontando para .svg, alinhar também (sem remover outros attrs)
+        const srcset = img.getAttribute('srcset');
+        if (srcset && /\.svg(\s|$)/i.test(srcset)) {
+          img.setAttribute('srcset', dataUri);
+        }
       }
     } catch (err) {
       console.warn('Falha ao inline do SVG:', err);
@@ -316,8 +323,8 @@ static applyDocConfig(docConfig, doc=null) {
             if (sheet.href)
             {
                 const resp = await myFetch(sheet.href);
-                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-                styles += await resp.text();
+                if (resp.ok)
+                  styles += await resp.text();
             }
             else
               for (let rule of sheet.cssRules)
