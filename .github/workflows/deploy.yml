@@ -1,43 +1,158 @@
-name: Build e Deploy para Servidor
+name: Build and Deploy
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
-  #push:
-  #  branches:
-  #    - main  # altere para sua branch de produção
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  VPS_PATH: ${{ vars.VPS_PROJECT_PATH || '/server/projetos/md2pdf' }}
 
 jobs:
-  build-and-deploy:
+  build:
+    name: Build and publish Docker image
     runs-on: ubuntu-latest
-
+    outputs:
+      image: ${{ steps.names.outputs.image }}
     steps:
-      - name: Clonar o repositório
-        uses: actions/checkout@v3
-      
-      - name: Verificar arquivos presentes
-        run: ls -la && ls -la public
+      - name: Checkout source
+        uses: actions/checkout@v7
 
-      - name: Compactar arquivos
+      - name: Nome da imagem em minúsculas
+        id: names
+        run: echo "image=${REGISTRY}/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
+      - name: Validar arquivos do projeto
         run: |
-          tar -czf deploy.tar.gz docker-compose.yml Dockerfile public
+          test -f public/index.html
+          ls -la public
 
-      - name: Copiar arquivos via SCP
-        uses: appleboy/scp-action@v0.1.7
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          source: deploy.tar.gz
-          target: /server/projetos/md2pdf
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Rodar docker-compose no servidor
-        uses: appleboy/ssh-action@v1.0.0
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v7
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
+          context: .
+          file: ./Dockerfile
+          push: true
+          # O deploy do CI puxa a tag do commit; `latest` serve ao script manual da VPS.
+          tags: |
+            ${{ steps.names.outputs.image }}:${{ github.sha }}
+            ${{ steps.names.outputs.image }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # Sem atestados: cada build vira uma única versão no GHCR, o que permite
+          # a limpeza manter só a última sem apagar parte da imagem atual.
+          provenance: false
+          sbom: false
+
+  deploy:
+    name: Deploy to production VPS
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v7
+
+      - name: Enviar docker-compose para VPS
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ vars.VPS_HOST }}
+          username: ${{ vars.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "docker-compose.yaml"
+          target: ${{ env.VPS_PATH }}
+
+      - name: Deploy application
+        uses: appleboy/ssh-action@v1.2.5
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_ACTOR: ${{ github.actor }}
+          IMAGE: ${{ needs.build.outputs.image }}
+          SHA: ${{ github.sha }}
+        with:
+          host: ${{ vars.VPS_HOST }}
+          username: ${{ vars.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          command_timeout: 15m
+          envs: GHCR_TOKEN,GHCR_ACTOR,IMAGE,SHA
           script: |
-            cd /server/projetos/md2pdf
-            tar -xzf deploy.tar.gz
-            docker compose build
-            docker compose up -d
+            set -e
+            cd ${{ env.VPS_PATH }}
+
+            # O token do GitHub vale só durante o job: login, pull e logout.
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_ACTOR" --password-stdin
+            trap 'docker logout ghcr.io >/dev/null 2>&1 || true' EXIT
+
+            echo "Baixando imagem do commit $SHA..."
+            docker pull "$IMAGE:$SHA"
+
+            # A tag local `deploy` é a que o compose usa (pull_policy: never):
+            # qualquer `docker compose up -d` manual recria com esta imagem, sem registry.
+            # Rollback: docker tag "$IMAGE:<sha-anterior>" "$IMAGE:deploy" && docker compose up -d
+            docker tag "$IMAGE:$SHA" "$IMAGE:deploy"
+
+            echo "Subindo aplicação..."
+            export GHCR_IMAGE="$IMAGE"
+            docker compose -f docker-compose.yaml up -d --remove-orphans server
+
+            echo "Removendo imagens antigas (mantém as 3 tags de commit mais recentes)..."
+            docker images "$IMAGE" --format '{{.CreatedAt}}\t{{.Tag}}' | awk -F'\t' '$2 != "deploy"' \
+              | sort -r | tail -n +4 | cut -f2 | xargs -r -I{} docker rmi "$IMAGE:{}" 2>/dev/null || true
+
+            echo "Containers:"
+            docker compose -f docker-compose.yaml ps
+            echo "Deploy concluído."
+
+  cleanup:
+    name: Limpar imagens antigas do GHCR
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Manter só a última versão da imagem
+        # O servidor não acessa o registry (usa a tag local `deploy` e guarda as
+        # 3 últimas localmente), então versões antigas no GHCR não têm uso.
+        # Mantém 1: o GitHub não permite apagar a última versão de um pacote de
+        # container, e o "Re-run" do job deploy precisa da imagem no registry.
+        #
+        # Por que não `actions/delete-package-versions` (o caminho natural)?
+        # A última versão (v5.0.0, jan/2024) roda em Node 20, que o GitHub
+        # descontinuou: o runner força Node 24 e emite warning a cada execução,
+        # e a action pode quebrar quando o Node 20 for removido de vez. O `gh`
+        # já vem no runner, usa a mesma API REST e não depende de runtime JS.
+        # Rever se sair uma versão da action com `runs.using: node24`.
+        #
+        # Conta de usuário: /users/<owner>. Se o repositório for para uma
+        # organização, trocar por /orgs/<org>.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+        run: |
+          set -euo pipefail
+          # O pacote do GHCR tem o nome do repositório em minúsculas.
+          API="/users/$OWNER/packages/container/$(echo "$REPO" | tr '[:upper:]' '[:lower:]')/versions"
+          # Ordena explicitamente pela data (a API não garante a ordem) e preserva a mais nova.
+          antigas=$(gh api --paginate "$API" --jq '.[] | "\(.created_at) \(.id)"' | sort -r | tail -n +2 | cut -d' ' -f2)
+          if [ -z "$antigas" ]; then echo "Nada a remover."; exit 0; fi
+          for id in $antigas; do
+            echo "Removendo versão $id"
+            gh api -X DELETE "$API/$id"
+          done
+          echo "Versões restantes: $(gh api --paginate "$API" --jq '.[].id' | wc -l)"
